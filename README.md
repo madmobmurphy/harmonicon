@@ -1,4 +1,4 @@
-# Harmonicon
+# Harmonicon V2
 
 ![Harmonicon Logo](public/logo.png)
 
