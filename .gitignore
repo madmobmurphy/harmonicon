@@ -2,6 +2,7 @@ node_modules/
 build/
 dist/
 dist_desktop/
+server.mjs
 coverage/
 .DS_Store
 *.log
