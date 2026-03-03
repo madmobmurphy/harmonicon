@@ -14,12 +14,12 @@ This project is **Open Source** and built by the community for the community. We
 
 Harmonicon is available as a native desktop application for Windows, macOS, and Linux.
 
-### 🪟 Windows
+### 🪟 Windows ( in work )
 1. Download the latest `.exe` installer from the [Releases](https://github.com/madmobmurphy/harmonicon/releases) page.
 2. Run the installer and follow the on-screen instructions.
 3. Alternatively, download the **Portable** version to run it without installation.
 
-### 🍎 macOS
+### 🍎 macOS ( in work )
 1. Download the `.dmg` file from the [Releases](https://github.com/madmobmurphy/harmonicon/releases) page.
 2. Open the `.dmg` and drag **Harmonicon** to your **Applications** folder.
 3. Launch the app from your Applications or Spotlight.
