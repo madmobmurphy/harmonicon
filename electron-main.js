@@ -10,15 +10,26 @@ let mainWindow;
 let serverProcess;
 
 function createWindow() {
-  // Start the Express server
-  // In production, we point to the compiled server.js
-  const serverPath = path.join(__dirname, 'server.ts');
-  
-  // Use tsx to run the typescript server in dev/electron mode
-  serverProcess = fork(serverPath, [], {
-    env: { ...process.env, NODE_ENV: 'production' },
-    execArgv: ['--import', 'tsx']
-  });
+  // In production (packaged app), use the pre-compiled server.cjs bundle.
+  // In development, use tsx to run server.ts directly.
+  const serverPath = app.isPackaged
+    ? path.join(__dirname, 'server.cjs')
+    : path.join(__dirname, 'server.ts');
+
+  const forkOptions = app.isPackaged
+    ? {
+        env: {
+          ...process.env,
+          NODE_ENV: 'production',
+          USERDATA_PATH: app.getPath('userData'),
+        },
+      }
+    : {
+        env: { ...process.env, NODE_ENV: 'production' },
+        execArgv: ['--import', 'tsx'],
+      };
+
+  serverProcess = fork(serverPath, [], forkOptions);
 
   mainWindow = new BrowserWindow({
     width: 1400,
