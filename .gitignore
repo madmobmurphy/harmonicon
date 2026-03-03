@@ -1,0 +1,9 @@
+node_modules/
+build/
+dist/
+dist_desktop/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
