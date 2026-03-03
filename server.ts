@@ -16,8 +16,11 @@ async function startServer() {
   app.use(express.json());
 
   // Storage configuration
-  const CONFIG_FILE = path.join(__dirname, "config.json");
-  let storagePath = path.join(__dirname, "uploads");
+  // Use USERDATA_PATH (set by Electron in production) so config/uploads go to
+  // a writable user directory rather than the read-only install directory.
+  const dataDir = process.env.USERDATA_PATH || __dirname;
+  const CONFIG_FILE = path.join(dataDir, "config.json");
+  let storagePath = path.join(dataDir, "uploads");
 
   if (fs.existsSync(CONFIG_FILE)) {
     const config = JSON.parse(fs.readFileSync(CONFIG_FILE, "utf-8"));
@@ -106,7 +109,7 @@ async function startServer() {
     });
     app.use(vite.middlewares);
   } else {
-    app.use(express.static("dist"));
+    app.use(express.static(path.join(__dirname, "dist")));
   }
 
   app.listen(PORT, "0.0.0.0", () => {
