@@ -1,5 +1,4 @@
 import express from "express";
-import RPC from "discord-rpc";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -41,9 +40,11 @@ async function startServer() {
   });
   const upload = multer({ storage });
 
-  // Discord RPC Integration
+  // Discord RPC Integration (optional — load dynamically so a missing/broken
+  // native dep doesn't crash the server before it can start listening)
   const DISCORD_APP_ID = "1373652899661479989";
   try {
+    const { default: RPC } = await import("discord-rpc");
     const rpc = new RPC.Client({ transport: "ipc" });
     rpc.on("ready", () => {
       rpc.setActivity({

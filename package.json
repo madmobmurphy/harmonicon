@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "tsx server.ts",
     "build": "vite build",
-    "build:server": "esbuild server.ts --bundle --platform=node --format=esm --define:process.env.NODE_ENV='\"production\"' --outfile=server.mjs --external:better-sqlite3 --external:discord-rpc",
+    "build:server": "esbuild server.ts --bundle --platform=node --format=esm --define:process.env.NODE_ENV='\"production\"' --outfile=server.mjs --external:better-sqlite3 --external:discord-rpc \"--banner:js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);\"",
     "preview": "vite preview",
     "clean": "rm -rf dist dist_desktop server.mjs",
     "lint": "tsc --noEmit",
