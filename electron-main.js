@@ -1,6 +1,7 @@
-import { app, BrowserWindow } from 'electron';
-import path from 'path';
+import { app, BrowserWindow, utilityProcess } from 'electron';
 import { fork } from 'child_process';
+import path from 'path';
+import http from 'http';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -9,28 +10,37 @@ const __dirname = path.dirname(__filename);
 let mainWindow;
 let serverProcess;
 
-function createWindow() {
-  // In production (packaged app), use the pre-compiled server.cjs bundle.
-  // In development, use tsx to run server.ts directly.
-  const serverPath = app.isPackaged
-    ? path.join(__dirname, 'server.cjs')
-    : path.join(__dirname, 'server.ts');
+// Poll /api/health until the server is ready, then resolve.
+// Retries every 500 ms for up to 20 seconds before rejecting.
+function waitForServer(port = 3000) {
+  return new Promise((resolve, reject) => {
+    let attempts = 0;
+    const maxAttempts = 40;
 
-  const forkOptions = app.isPackaged
-    ? {
-        env: {
-          ...process.env,
-          NODE_ENV: 'production',
-          USERDATA_PATH: app.getPath('userData'),
-        },
+    const check = () => {
+      const req = http.get(`http://127.0.0.1:${port}/api/health`, (res) => {
+        res.resume();
+        if (res.statusCode === 200) resolve();
+        else next();
+      });
+      req.on('error', next);
+      req.end();
+    };
+
+    const next = () => {
+      if (++attempts >= maxAttempts) {
+        reject(new Error('Server did not become ready within 20 s'));
+      } else {
+        setTimeout(check, 500);
       }
-    : {
-        env: { ...process.env, NODE_ENV: 'production' },
-        execArgv: ['--import', 'tsx'],
-      };
+    };
 
-  serverProcess = fork(serverPath, [], forkOptions);
+    // Small initial pause to let the process start up
+    setTimeout(check, 300);
+  });
+}
 
+async function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1400,
     height: 900,
@@ -40,17 +50,51 @@ function createWindow() {
       nodeIntegration: false,
       contextIsolation: true,
     },
-    icon: path.join(__dirname, 'build', 'icon.png')
+    icon: path.join(__dirname, 'build', 'icon.png'),
   });
 
-  // Wait a bit for the server to start
-  setTimeout(() => {
+  if (app.isPackaged) {
+    // Production: use the pre-compiled ESM bundle via Electron's utilityProcess.
+    // utilityProcess is the recommended Electron API for Node.js child processes
+    // in packaged apps — it correctly resolves paths inside the app bundle.
+    const serverPath = path.join(__dirname, 'server.mjs');
+    serverProcess = utilityProcess.fork(serverPath, [], {
+      env: {
+        ...process.env,
+        NODE_ENV: 'production',
+        // Pass a writable user-data directory so the server can store
+        // config.json and uploaded audio files outside the install dir.
+        USERDATA_PATH: app.getPath('userData'),
+      },
+    });
+    serverProcess.on('exit', (code) => {
+      console.error(`[harmonicon] server process exited with code ${code}`);
+    });
+  } else {
+    // Development: run server.ts directly using tsx.
+    const serverPath = path.join(__dirname, 'server.ts');
+    serverProcess = fork(serverPath, [], {
+      env: { ...process.env, NODE_ENV: 'production' },
+      execArgv: ['--import', 'tsx'],
+    });
+  }
+
+  try {
+    await waitForServer();
     mainWindow.loadURL('http://localhost:3000');
-  }, 2000);
+  } catch (err) {
+    console.error('[harmonicon] server startup failed:', err.message);
+    mainWindow.loadURL(
+      `data:text/html,<body style="background:%230a0a0a;color:%23fff;font-family:sans-serif;padding:40px">` +
+        `<h2>Server failed to start</h2><pre>${err.message}</pre></body>`
+    );
+  }
 
   mainWindow.on('closed', () => {
     mainWindow = null;
-    if (serverProcess) serverProcess.kill();
+    if (serverProcess) {
+      if (typeof serverProcess.kill === 'function') serverProcess.kill();
+    }
   });
 }
 
