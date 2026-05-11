@@ -14,15 +14,18 @@ This project is **Open Source** and built by the community for the community. We
 
 Harmonicon is available as a native desktop application for Windows, macOS, and Linux.
 
-### 🪟 Windows ( in work )
+### 🪟 Windows
 1. Download the latest `.exe` installer from the [Releases](https://github.com/madmobmurphy/harmonicon/releases) page.
 2. Run the installer and follow the on-screen instructions.
 3. Alternatively, download the **Portable** version to run it without installation.
 
-### 🍎 macOS ( in work )
-1. Download the `.dmg` file from the [Releases](https://github.com/madmobmurphy/harmonicon/releases) page.
-2. Open the `.dmg` and drag **Harmonicon** to your **Applications** folder.
-3. Launch the app from your Applications or Spotlight.
+### 🍎 macOS 
+1. Download the repro.
+2. Open the extracted repro in the terminal.
+3. run "npm install"
+4. run "npm run dist"
+5. Find the .dmg file in the new created folder "dist_desktop" and install it. 
+6. Launch the app from your Applications or Spotlight.
 
 ### 🐧 Linux
 Harmonicon supports multiple Linux distribution formats:
@@ -60,6 +63,18 @@ If you prefer to build the application yourself, follow these steps:
    The installers will be generated in the `dist_desktop` folder.
 
 ---
+
+Update Version 2.0.1
+
+Fixed the issue where the Discord game tag feature blocked the app from running when discord was not detected.
+
+Uploaded a Windows .exe
+
+Added new features: 
+- Playlist mode for music tracks
+- Playtime and status bar for music tracks
+- File names now start rolling through the name field to show the full file name
+- Import and export settings, uploads and presets
 
 ## 📄 License
 
